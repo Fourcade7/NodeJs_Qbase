@@ -16,6 +16,9 @@ datasource db {
 model User {
   id          Int      @id @default(autoincrement())
   username    String
-  phonenumber String
+  surname     String
+  phonenumber String    @unique
+  password    String
+  cardnumber  String   @default("0000 0000 0000 0000")
   createdAt   DateTime @default(now())
 }

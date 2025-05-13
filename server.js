@@ -6,7 +6,7 @@ import router from './routes/AuthRoute.js'; // .js yozilishi shart
 const app = express();
 
 app.use(express.json());
-app.use("/auth",router);
+app.use("/",router);
 
 
 

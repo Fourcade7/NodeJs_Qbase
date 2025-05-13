@@ -1,0 +1,251 @@
+where: {
+  username: {
+    equals: "value",         // aniq tenglik
+    not: "value",            // teng emas
+    contains: "value",       // ichida bor
+    startsWith: "value",     // boshlanadi
+    endsWith: "value",       // tugaydi
+    in: ["val1", "val2"],    // ro'yxatdagi qiymatlardan biri
+    notIn: ["val1", "val2"], // ro'yxatdagi qiymatlardan biri emas
+    // PostgreSQL uchun:
+    mode: 'insensitive',     // katta-kichik harflarga etibor bermaslik
+    search: "term1 & term2", // full-text search (faqat PostgreSQL)
+  }
+}
+
+
+
+
+
+where: {
+  age: {
+    equals: 25,
+    not: 30,
+    in: [18, 21, 25],
+    notIn: [30, 40],
+    lt: 30,    // kichik (<)
+    lte: 30,   // kichik yoki teng (≤)
+    gt: 18,    // katta (>)
+    gte: 18,   // katta yoki teng (≥)
+  },
+  createdAt: {
+    gt: new Date('2023-01-01'), // 2023-yil 1-yanvardan keyin
+    lt: new Date()              // hozirdan oldin
+  }
+}
+
+
+
+
+where: {
+  isActive: true,
+  // yoki
+  isVerified: {
+    equals: false
+  }
+}
+
+
+
+
+
+where: {
+  posts: {
+    some: { // kamida bitta post shartga mos kelsa
+      title: { contains: "Prisma" }
+    },
+    every: { // barcha postlar shartga mos kelsa
+      published: true
+    },
+    none: { // hech qanday post shartga mos kelmasa
+      title: { contains: "test" }
+    }
+  }
+}
+
+
+PostgreSQL
+where: {
+  tags: {
+    has: "javascript",    // massivda mavjud
+    hasEvery: ["js", "ts"], // barchasi mavjud
+    hasSome: ["react", "vue"], // kamida bittasi mavjud
+    isEmpty: false,       // bo'sh emas
+    isSet: true          // null emas
+  }
+}
+
+
+
+where: {
+  email: {
+    equals: null,    // null ga teng
+    not: null        // null emas
+  }
+}
+
+
+
+
+
+// Yagona yozuv yaratish
+await prisma.modelName.create({
+  data: {
+    field1: value1,
+    field2: value2
+  }
+})
+
+// Ko'plab yozuvlar yaratish
+await prisma.modelName.createMany({
+  data: [
+    { field1: value1 },
+    { field2: value2 }
+  ],
+  skipDuplicates: true
+})
+
+
+
+// Bitta yozuvni olish
+await prisma.modelName.findUnique({
+  where: { id: 1 }
+})
+
+// Birinchi topilgan yozuv
+await prisma.modelName.findFirst({
+  where: { field: value }
+})
+
+// Ko'plab yozuvlarni olish
+await prisma.modelName.findMany({
+  where: { field: value },
+  skip: 10,  // Sahifalash uchun
+  take: 5,
+  orderBy: { field: 'asc'|'desc' }
+})
+
+
+// Yagona yozuvni yangilash
+await prisma.modelName.update({
+  where: { id: 1 },
+  data: {
+    field: newValue
+  }
+})
+
+// Ko'plab yozuvlarni yangilash
+await prisma.modelName.updateMany({
+  where: { field: value },
+  data: {
+    field: newValue
+  }
+})
+
+// Raqamli maydonlarni oshirish/kamaytirish
+await prisma.modelName.update({
+  where: { id: 1 },
+  data: {
+    age: { increment: 1 },  // 1 ga oshirish
+    points: { decrement: 5 } // 5 ga kamaytirish
+  }
+})
+
+
+
+// Yagona yozuvni o'chirish
+await prisma.modelName.delete({
+  where: { id: 1 }
+})
+
+// Ko'plab yozuvlarni o'chirish
+await prisma.modelName.deleteMany({
+  where: { field: value }
+})
+
+
+
+
+where: {
+  // String filtrlari
+  username: {
+    equals: "value",
+    not: "value",
+    in: ["val1", "val2"],
+    notIn: ["val1", "val2"],
+    contains: "value",
+    startsWith: "value",
+    endsWith: "value",
+    mode: 'insensitive' // PostgreSQL uchun
+  },
+
+  // Raqam/Date filtrlari
+  age: {
+    gt: 18,   // >
+    gte: 18,  // >=
+    lt: 65,   // <
+    lte: 65,  // <=
+    between: [18, 65]
+  },
+
+  // Mantiqiy filtr
+  isActive: true,
+
+  // Relatsiyalar uchun filtr
+  posts: {
+    some: { title: { contains: "Prisma" } },
+    every: { published: true },
+    none: { title: { contains: "test" } }
+  },
+
+  // Massivlar uchun (PostgreSQL)
+  tags: {
+    has: "javascript",
+    hasEvery: ["js", "ts"],
+    hasSome: ["react", "vue"]
+  }
+}
+
+
+
+const stats = await prisma.user.aggregate({
+  _count: { _all: true },
+  _avg: { age: true },
+  _sum: { points: true },
+  _min: { age: true },
+  _max: { age: true },
+  where: { active: true }
+})
+
+
+
+
+const groups = await prisma.user.groupBy({
+  by: ['role', 'status'],
+  _count: { _all: true },
+  _sum: { points: true },
+  having: {
+    role: { _count: { gt: 5 } }
+  },
+  orderBy: { _count: { role: 'desc' } }
+})
+
+
+
+
+// Asinxron tranzaksiya
+const result = await prisma.$transaction(async (tx) => {
+  const op1 = await tx.model.update({...});
+  const op2 = await tx.model.create({...});
+  return { op1, op2 };
+})
+
+// Oddiy tranzaksiya
+const [res1, res2] = await prisma.$transaction
+
+
+
+
+
+
+
