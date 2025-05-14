@@ -1,12 +1,14 @@
 // index.js
 
 import express from 'express';
-import router from './routes/AuthRoute.js'; // .js yozilishi shart
+import authRouter from './routes/AuthRoute.js'; // .js yozilishi shart
+import partyRouter from './routes/PartyRoutes.js'; // .js yozilishi shart
 
 const app = express();
 
 app.use(express.json());
-app.use("/",router);
+app.use("/",authRouter);
+app.use("/party",partyRouter);
 
 
 

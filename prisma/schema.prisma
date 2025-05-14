@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:root@localhost:8889/Qbase"
+  url      = "mysql://root:root@localhost:3306/Qbase"
 }
 
 model User {
@@ -20,7 +20,7 @@ model User {
   phonenumber String   @unique
   password    String
   cardlist    Card[]
-  patylist    Party[]
+  partylist    Party[]
   createdAt   DateTime @default(now())
 }
 
@@ -36,7 +36,9 @@ model Card {
 model Party {
   id         Int      @id @default(autoincrement())
   userId     Int
+  name       String
   type       String
+  address    String
   cardNumber String
   startTime  String
   endTime    String

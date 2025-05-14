@@ -27,7 +27,8 @@ class AuthController{
         try{
             let users=await prisma.user.findMany({
                 include:{
-                    cardlist:true
+                    cardlist:true,
+                    partylist:false
                 }
             });
             res.send(users);
