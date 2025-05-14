@@ -1,3 +1,75 @@
+
+
+
+ONE TO MANY
+
+model User {
+  id    Int    @id @default(autoincrement())
+  name  String
+  cards Card[]
+}
+
+model Card {
+  id     Int    @id @default(autoincrement())
+  number String
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+
+const users = await prisma.user.findMany({
+  include: {
+    cards: true
+  }
+});
+
+const user = await prisma.user.findUnique({
+  where: { id: 1 },
+  include: {
+    cards: true
+  }
+});
+
+
+
+const card = await prisma.card.findUnique({
+  where: { id: 1 },
+  include: {
+    user: true
+  }
+});
+
+
+ONE TO ONE
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId Int
+}
+
+model Profile {
+  id       Int    @id @default(autoincrement())
+  bio      String
+  avatar   String
+  user     User   @relation
+}
+
+
+const userWithProfile = await prisma.user.findUnique({
+  where: {
+    id: 1
+  },
+  include: {
+    profile: true
+  }
+});
+
+
+
+////////////
+
 where: {
   username: {
     equals: "value",         // aniq tenglik
@@ -116,8 +188,28 @@ await prisma.modelName.findUnique({
 await prisma.modelName.findFirst({
   where: { field: value }
 })
+const user = await prisma.user.findFirst({
+  where: {
+    username: "Ali"
+  }
+});
+
+const user = await prisma.user.findUnique({
+  where: {
+    phonenumber: "998901234567"
+  }
+});
+
 
 // Ko'plab yozuvlarni olish
+
+const users = await prisma.user.findMany({
+  where: {
+    username: "Ali",
+    phonenumber: "998901234567"
+  }
+});
+
 await prisma.modelName.findMany({
   where: { field: value },
   skip: 10,  // Sahifalash uchun

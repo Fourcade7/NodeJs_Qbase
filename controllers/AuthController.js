@@ -1,5 +1,6 @@
 
 import { PrismaClient } from '@prisma/client';
+import { validationResult } from 'express-validator';
 const prisma = new PrismaClient();
 
 
@@ -24,7 +25,11 @@ class AuthController{
 
     async getAllUser(req,res){
         try{
-            let users=await prisma.user.findMany();
+            let users=await prisma.user.findMany({
+                include:{
+                    cardlist:true
+                }
+            });
             res.send(users);
         }catch(error){
             res.status(400).send(error);
@@ -34,18 +39,6 @@ class AuthController{
 
 
     async getAllUserSearch(req,res){
-        /**
-         * 
-         * const users = await prisma.user.findMany({
-            where: {
-                username: {
-                contains: 'pr',
-                mode: 'insensitive', // katta-kichik harfga farq qilmaydi
-                },
-            },
-            });
-         */
-
         const search = req.query.search || '';
 
         try{
@@ -102,7 +95,12 @@ class AuthController{
     async getById(req,res){
         try{
             const id=Number(req.params.id);
-            let user=await prisma.user.findUnique({where:{id}});
+            let user=await prisma.user.findUnique({
+                where:{id},
+                include:{
+                    cardlist:true
+                }
+            });
             if(!user){
                 return res.status(404).send({message:"User not found"});
             }
@@ -115,10 +113,32 @@ class AuthController{
 
 
     async login(req,res){
-        let data=req.body;
-        res.send({
-            message:"login success"
-        });
+        // const errors = validationResult(req);
+        // if (!errors.isEmpty()) {
+        //     return res.status(400).json({ errors: errors.array() });
+        // }
+        let {phonenumber,password}=req.body;
+        if (!phonenumber || !password) {
+         return res.status(400).send({ message: "phonenumber and password must" });
+        }
+        try{
+            
+            let user=await prisma.user.findFirst({
+                where:{
+                    phonenumber:phonenumber,
+                    password:password
+                }
+            });
+            if(!user){
+                return res.status(404).send({message:"Error User not found"});
+            }
+            res.send({
+                id:user.id,
+                message:"Login success"
+            });
+        }catch(error){
+            res.status(400).send(error);
+        }
     }
 
     async register(req,res){
@@ -143,8 +163,6 @@ class AuthController{
     async update(req,res){
          const id=Number(req.params.id);
           let {username,surname,phonenumber,password}=req.body;
-
-
         try{
             let usercheck=await prisma.user.findUnique({where:{id}});
             if(!usercheck){

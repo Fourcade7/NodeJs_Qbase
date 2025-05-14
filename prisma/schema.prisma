@@ -17,8 +17,33 @@ model User {
   id          Int      @id @default(autoincrement())
   username    String
   surname     String
-  phonenumber String    @unique
+  phonenumber String   @unique
   password    String
-  cardnumber  String   @default("0000 0000 0000 0000")
+  cardlist    Card[]
+  patylist    Party[]
   createdAt   DateTime @default(now())
 }
+
+model Card {
+  id        Int      @id @default(autoincrement())
+  number    String
+  date      String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Party {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  type       String
+  cardNumber String
+  startTime  String
+  endTime    String
+  status     Boolean
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+
+
