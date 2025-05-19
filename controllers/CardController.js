@@ -4,7 +4,7 @@ import { validationResult } from 'express-validator';
 const prisma = new PrismaClient();
 
 
-class AuthController{
+class CardController{
 
 
     async  universal(req,res) {
@@ -213,4 +213,4 @@ class AuthController{
     }
 }
 
-export default new AuthController();
+export default new CardController();

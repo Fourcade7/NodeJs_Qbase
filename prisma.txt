@@ -65,7 +65,20 @@ const userWithProfile = await prisma.user.findUnique({
     profile: true
   }
 });
-
+//SEARCH
+const users = await prisma.user.findMany({
+  where: {
+    AND: [
+      { active: true },
+      {
+        OR: [
+          { username: { contains: 'ali' } },
+          { surname: { contains: 'ali' } }
+        ]
+      }
+    ]
+  }
+});
 
 
 ////////////

@@ -12,13 +12,13 @@ class PartyController {
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-    let { name, type, address, cardNumber, startTime, endTime, status } =
-      req.body;
+    let { userName,name, type, address, cardNumber, startTime, endTime, status } = req.body;
 
     try {
       const party = await prisma.party.create({
         data: {
           userId: id,
+          userName,
           name,
           type,
           address,
@@ -102,6 +102,39 @@ class PartyController {
         }
 
     }
+
+
+     async updateParty(req, res) {
+
+    const id = Number(req.params.id);
+    let partycheck=await prisma.party.findUnique({where:{id}});
+            if(!partycheck){
+                return res.status(404).send({message:"party not found"});
+            }
+    let { userName,name, type, address, cardNumber, startTime, endTime, status } = req.body;
+
+    try {
+      const party = await prisma.party.update({
+        where:{id},
+        data: {
+          userId: id,
+          userName,
+          name,
+          type,
+          address,
+          cardNumber,
+          startTime,
+          endTime,
+          status,
+        },
+      });
+
+      res.status(200).json({ success: true });
+    } catch (error) {
+      res.status(400).send({ error: error });
+    }
+  }
+
 
     async delete(req,res){
 
