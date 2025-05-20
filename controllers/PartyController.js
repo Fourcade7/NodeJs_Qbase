@@ -12,13 +12,13 @@ class PartyController {
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-    let { userName,name, type, address, cardNumber, startTime, endTime, status } = req.body;
+    let {name, type, address, cardNumber, startTime, endTime, status } = req.body;
 
     try {
       const party = await prisma.party.create({
         data: {
           userId: id,
-          userName,
+          userName:user.username,
           name,
           type,
           address,
