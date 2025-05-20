@@ -27,7 +27,7 @@ class AuthController{
         try{
             let users=await prisma.user.findMany({
                 include:{
-                    cardlist:true,
+                    cardlist:false,
                     partylist:false
                 }
             });

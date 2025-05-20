@@ -23,15 +23,10 @@ class CardController{
         });
     }
 
-    async getAllUser(req,res){
+    async getAllCards(req,res){
         try{
-            let users=await prisma.user.findMany({
-                include:{
-                    cardlist:true,
-                    partylist:false
-                }
-            });
-            res.send(users);
+            let cards=await prisma.card.findMany();
+            res.send(cards);
         }catch(error){
             res.status(400).send(error);
         }
@@ -39,31 +34,23 @@ class CardController{
     }
 
 
-    async getAllUserSearch(req,res){
+    async getAllCardSearch(req,res){
         const search = req.query.search || '';
 
         try{
-           const users = await prisma.user.findMany({
+           const cards = await prisma.card.findMany({
             where: {
-                OR:[
-                {username: {
-                //startsWith: search,
-                contains: search.toLowerCase()
-                }},
-                {surname: {
-                //startsWith: search,
-                contains: search.toLowerCase()
-                }},
-                {phonenumber: {
-                //startsWith: search,
-                contains: search.toLowerCase()
-                }},
-                ]
+                number: {
+                    contains: search.toLowerCase()
+                    },
+            },
+            include:{
+                    user:true
             },
             take:4
             });
 
-            res.send(users);
+            res.send(cards);
         }catch(error){
             res.status(400).send(error);
         }
@@ -71,7 +58,7 @@ class CardController{
     }
 
 
-    async  getAllUserPag(req, res) {
+    async  getAllCardPag(req, res) {
     try {
         // So‘rovdan page va limit parametrlarini olish
         let page = parseInt(req.query.page) || 1;
@@ -81,21 +68,21 @@ class CardController{
         let skip = (page - 1) * limit;
 
         // Ma’lumotlarni olish
-        let users = await prisma.user.findMany({
+        let cards = await prisma.card.findMany({
             skip: skip,
             take: limit,
         });
 
         // Jami foydalanuvchilar sonini olish
-        let totalUsers = await prisma.user.count();
+        let totalCards = await prisma.card.count();
 
         // Javob yuborish
         res.send({
             currentpage: page,
             limit: limit,
-            alluser: totalUsers,
-            allpages: Math.ceil(totalUsers / limit),
-            users: users,
+            allcard: totalCards,
+            allpages: Math.ceil(totalCards / limit),
+            cards: cards,
         });
     } catch (error) {
         res.status(400).send(error);
@@ -106,17 +93,11 @@ class CardController{
     async getById(req,res){
         try{
             const id=Number(req.params.id);
-            let user=await prisma.user.findUnique({
-                where:{id},
-                include:{
-                    cardlist:true,
-                    partylist:true
-                }
-            });
-            if(!user){
-                return res.status(404).send({message:"User not found"});
+            let card=await prisma.card.findUnique({where:{id}});
+            if(!card){
+                return res.status(404).send({message:"Card not found"});
             }
-            res.send(user);
+            res.send(card);
         }catch(error){
             res.status(400).send(error);
         }
@@ -124,74 +105,44 @@ class CardController{
     }
 
 
-    async login(req,res){
-        // const errors = validationResult(req);
-        // if (!errors.isEmpty()) {
-        //     return res.status(400).json({ errors: errors.array() });
-        // }
-        let {phonenumber,password}=req.body;
-        if (!phonenumber || !password) {
-         return res.status(400).send({ message: "phonenumber and password must" });
-        }
-        try{
-            
-            let user=await prisma.user.findFirst({
-                where:{
-                    phonenumber:phonenumber,
-                    password:password
-                }
-            });
-            if(!user){
-                return res.status(404).send({message:"Error User not found"});
-            }
-            res.send({
-                id:user.id,
-                message:"Login success"
-            });
-        }catch(error){
-            res.status(400).send(error);
-        }
-    }
+    
 
-    async register(req,res){
-        let {username,surname,phonenumber,password}=req.body;
+    async addNewCard(req,res){
+        const userId=Number(req.params.id);
+        let {number,date}=req.body;
 
         try{
-            const user=await prisma.user.create({
+            const card=await prisma.card.create({
                 data:{
-                    username,
-                    surname,
-                    phonenumber,
-                    password
+                    userId,
+                    number,
+                    date
                 }
             });
 
-            res.status(201).json(user);
+            res.status(201).json(card);
         }catch(error){
             res.status(400).send({error:error});
         }
     }
 
     async update(req,res){
-         const id=Number(req.params.id);
-          let {username,surname,sex,phonenumber,password}=req.body;
+          const id=Number(req.params.id);
+          let {number,date}=req.body;
         try{
-            let usercheck=await prisma.user.findUnique({where:{id}});
-            if(!usercheck){
-                return res.status(404).send({message:"User not found"});
+            let cardcheck=await prisma.card.findUnique({where:{id}});
+            if(!cardcheck){
+                return res.status(404).send({message:"Card not found"});
             }
-            const user=await prisma.user.update({
+            const card=await prisma.card.update({
                 where:{id},
                 data:{
-                    username,
-                    surname,
-                    sex,
-                    phonenumber,
-                    password
+                    number,
+                    date
                 }
             });
 
-            res.status(200).json(user);
+            res.status(200).json(card);
         }catch(error){
             res.status(400).send({error:error});
         }
@@ -201,12 +152,13 @@ class CardController{
 
         const id=Number(req.params.id);
         try{
-            let usercheck=await prisma.user.findUnique({where:{id}});
-            if(!usercheck){
-                return res.status(404).send({message:"User not found"});
+            
+            let cardcheck=await prisma.card.findUnique({where:{id}});
+            if(!cardcheck){
+                return res.status(404).send({message:"Card not found"});
             }
-            await prisma.user.delete({where:{id}});
-            res.status(200).json({message:"User deleted"});
+            await prisma.card.delete({where:{id}});
+            res.status(200).json({message:"Card deleted"});
         }catch(error){
             res.status(400).send({error:error});
         }

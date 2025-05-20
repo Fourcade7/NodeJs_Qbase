@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:root@localhost:8889/Qbase"
+  url      = "mysql://root:root@localhost:3306/Qbase"
 }
 
 model User {
