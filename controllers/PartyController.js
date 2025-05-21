@@ -13,7 +13,7 @@ class PartyController {
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-    return res.status(200).send({ userName:user.username});
+    return res.status(200).send({ message:"success"});
     let {name, type, address, cardNumber, startTime, endTime, status } = req.body;
 
     try {
