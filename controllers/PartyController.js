@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 class PartyController {
+  
   async addParty(req, res) {
     const id = Number(req.params.id);
 
@@ -17,7 +18,7 @@ class PartyController {
     try {
       const party = await prisma.party.create({
         data: {
-          userId: id,
+          userId:id,
           userName:user.username,
           name,
           type,
