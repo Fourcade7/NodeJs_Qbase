@@ -1,5 +1,37 @@
 
+MANY TO MANY
 
+model User {
+  id       Int      @id @default(autoincrement())
+  name     String
+
+  // Men kimlarni do‘st deb qo‘shganman
+  friends  Friend[] @relation("UserToFriend_user")
+
+  // Meni kimlar do‘st deb qo‘shgan
+  friendOf Friend[] @relation("UserToFriend_friend")
+}
+
+model Friend {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+
+  user      User   @relation("UserToFriend_user", fields: [userId], references: [id])
+  friend    User   @relation("UserToFriend_friend", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId]) // takroriy yozuvlarga yo‘l qo‘ymaydi
+}
+
+await prisma.friend.create({
+  data: {
+    userId: Number(userId),
+    friendId: Number(friendId),
+  }
+});
+
+
+MANY TO MANY
 
 ONE TO MANY
 

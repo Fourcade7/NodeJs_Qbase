@@ -22,6 +22,13 @@ datasource db {
     password    String
     cardlist    Card[]
     partylist   Party[]
+
+     // Men kimlarni do‘st deb qo‘shganman
+    friends  Friend[] @relation("UserToFriend_user")
+
+    // Meni kimlar do‘st deb qo‘shgan
+    friendOf Friend[] @relation("UserToFriend_friend")
+
     createdAt   DateTime @default(now())
   }
 
@@ -49,5 +56,17 @@ datasource db {
     createdAt  DateTime @default(now())
   }
 
+
+
+model Friend {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+
+  user      User   @relation("UserToFriend_user", fields: [userId], references: [id])
+  friend    User   @relation("UserToFriend_friend", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId]) // takroriy yozuvlarga yo‘l qo‘ymaydi
+}
 
 
