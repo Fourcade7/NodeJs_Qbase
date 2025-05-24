@@ -22,7 +22,7 @@ datasource db {
     password    String
     cardlist    Card[]
     partylist   Party[]
-
+    
      // Men kimlarni do‘st deb qo‘shganman
     friends  Friend[] @relation("UserToFriend_user")
 
@@ -65,7 +65,7 @@ model Friend {
 
   user      User   @relation("UserToFriend_user", fields: [userId], references: [id])
   friend    User   @relation("UserToFriend_friend", fields: [friendId], references: [id])
-
+  
   @@unique([userId, friendId]) // takroriy yozuvlarga yo‘l qo‘ymaydi
 }
 

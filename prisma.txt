@@ -229,6 +229,13 @@ await prisma.modelName.findUnique({
   where: { id: 1 }
 })
 
+let user=await prisma.user.findFirst({
+                where:{
+                    phonenumber:phonenumber,
+                    password:password
+                }
+});
+
 // Birinchi topilgan yozuv
 await prisma.modelName.findFirst({
   where: { field: value }

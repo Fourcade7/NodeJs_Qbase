@@ -1,7 +1,14 @@
 
 import { PrismaClient } from '@prisma/client';
 import { validationResult } from 'express-validator';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+
+
 const prisma = new PrismaClient();
+
+const SECRET_KEY = "super-secret-key";
+const REFRESH_SECRET = "refresh-secret-key";
 
 
 class AuthController{
@@ -104,8 +111,19 @@ class AuthController{
 
 
     async getById(req,res){
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "Token not found" });
+        }
+
+        //const token = authHeader.split(" ")[1];
+        const token = authHeader.replace("Bearer ", "");
+        const decoded = jwt.verify(token, SECRET_KEY);
+
         try{
-            const id=Number(req.params.id);
+
+            const id=Number(decoded.id);
             let user=await prisma.user.findUnique({
                 where:{id},
                 include:{
@@ -123,38 +141,95 @@ class AuthController{
 
     }
 
-
-    async login(req,res){
+     async login(req,res){
         // const errors = validationResult(req);
         // if (!errors.isEmpty()) {
         //     return res.status(400).json({ errors: errors.array() });
         // }
-        let {phonenumber,password}=req.body;
-        if (!phonenumber || !password) {
-         return res.status(400).send({ message: "phonenumber and password must" });
+         const { phonenumber, password } = req.body;
+
+    if (!phonenumber || !password) {
+      return res.status(400).send({ message: "phonenumber and password must" });
+    }
+
+    try {
+      // Faqat telefon raqam bo‘yicha userni topamiz
+      const user = await prisma.user.findFirst({
+        where: {
+          phonenumber: phonenumber
         }
-        try{
+      });
+
+      if (!user) {
+        return res.status(404).send({ message: "User not found" });
+      }
+
+      // Parolni bcrypt orqali tekshiramiz
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).send({ message: "Incorrect password" });
+      }
+
+      // JWT tokenlar 
+      const accessToken = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: "30d" });
+      const refreshToken = jwt.sign({ id: user.id }, REFRESH_SECRET, { expiresIn: "90d" });
+
+      return res.json({ accessToken, refreshToken });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ message: "Internal server error" });
+    }
+    }
+
+    async refreshToken(req,res){
+       const token = req.body.refreshToken;
+  
+        if (!token) {
+            return res.status(401).send("not refresh token");
+        }
+
+        try {
+            // Refresh tokenni tekshiramiz
+            const userData = jwt.verify(token, REFRESH_SECRET);
             
-            let user=await prisma.user.findFirst({
-                where:{
-                    phonenumber:phonenumber,
-                    password:password
-                }
-            });
-            if(!user){
-                return res.status(404).send({message:"Error User not found"});
-            }
-            res.send({
-                id:user.id,
-                message:"Login success"
-            });
-        }catch(error){
+            // Yangi access token yaratamiz (90d amal qiladi)
+            const newAccessToken = jwt.sign({ id: userData.id }, SECRET_KEY, { expiresIn: "90d" });
+            
+            // Yangi access tokenni javobga yuboramiz
+            res.json({ newAccessToken: newAccessToken });
+        } catch (error) {
+            // Token noto‘g‘ri yoki muddati tugagan bo‘lsa
             res.status(400).send(error);
+        }
+    }
+    async decodeToken(req,res){
+       const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "Token not found" });
+        }
+
+        //const token = authHeader.split(" ")[1];
+        const token = authHeader.replace("Bearer ", "");
+
+
+        try {
+            // TOKEN NI TEKSHIRIB VA DECODE QILIB, ID NI OLAMIZ
+            const decoded = jwt.verify(token, SECRET_KEY);
+            res.send({decoded});
+           
+        } catch (error) {
+            return res.status(403).json({ 
+                error,
+                message: "Token wrong or expired" 
+            });
         }
     }
 
     async register(req,res){
         let {username,surname,phonenumber,password}=req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         try{
             const user=await prisma.user.create({
@@ -162,7 +237,7 @@ class AuthController{
                     username,
                     surname,
                     phonenumber,
-                    password
+                    password:hashedPassword
                 }
             });
 
@@ -173,8 +248,21 @@ class AuthController{
     }
 
     async update(req,res){
-         const id=Number(req.params.id);
-          let {username,surname,sex,phonenumber,password}=req.body;
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "Token not found" });
+        }
+
+        //const token = authHeader.split(" ")[1];
+        const token = authHeader.replace("Bearer ", "");
+        const decoded = jwt.verify(token, SECRET_KEY);
+
+       
+
+        const id=Number(decoded.id);
+         
+        let {username,surname,sex,phonenumber,password}=req.body;
         try{
             let usercheck=await prisma.user.findUnique({where:{id}});
             if(!usercheck){
@@ -199,7 +287,18 @@ class AuthController{
 
     async delete(req,res){
 
-        const id=Number(req.params.id);
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "Token not found" });
+        }
+
+        //const token = authHeader.split(" ")[1];
+        const token = authHeader.replace("Bearer ", "");
+        const decoded = jwt.verify(token, SECRET_KEY);
+
+        const id=Number(decoded.id);
+
         try{
             let usercheck=await prisma.user.findUnique({where:{id}});
             if(!usercheck){

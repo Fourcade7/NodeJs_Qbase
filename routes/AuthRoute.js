@@ -23,10 +23,12 @@ const loginValidation = [
 router.post('/register', authController.register);
 router.post("/login",loginValidation,authController.login);
 router.get("/getalluser",authController.getAllUser);
+router.get("/decodetoken",authController.decodeToken);
+router.post("/refreshtoken",authController.refreshToken);
 router.get("/getalluserpag",authController.getAllUserPag);
 router.get("/getallusersearch",authController.getAllUserSearch);
-router.get("/getbyid/:id",authController.getById);
-router.put("/update/:id",authController.update);
-router.delete("/delete/:id",authController.delete);
+router.get("/getbyid",authController.getById);
+router.put("/update",authController.update);
+router.delete("/delete",authController.delete);
 
 export default router;

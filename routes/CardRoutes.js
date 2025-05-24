@@ -4,7 +4,7 @@ import cardController from '../controllers/CardController.js';
 const router = express.Router();
 
 
-router.post("/add/:id",cardController.addNewCard);
+router.post("/add",cardController.addNewCard);
 router.get("/getall",cardController.getAllCards);
 router.get("/getallpag",cardController.getAllCardPag);
 router.get("/getby/:id",cardController.getById);

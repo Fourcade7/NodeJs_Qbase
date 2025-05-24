@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
+
+const SECRET_KEY = "super-secret-key";
 
 class FriendController {
   async universal(req, res) {
@@ -19,7 +22,17 @@ class FriendController {
   }
 
   async getAllFriendsOfUsers(req, res) {
-    const id = Number(req.params.id);
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Token not found" });
+    }
+
+    //const token = authHeader.split(" ")[1];
+    const token = authHeader.replace("Bearer ", "");
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    const id = Number(decoded.id);
 
     try {
       // Men qo‘shgan do‘stlar (ya’ni userId = men)
@@ -46,64 +59,80 @@ class FriendController {
     }
   }
 
- 
   async getAllFriendsOfUsersPag(req, res) {
-  const id = Number(req.params.id);
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
+     const authHeader = req.headers.authorization;
 
-  try {
-    // Men qo‘shgan do‘stlar (userId = men)
-    const addedByMe = await prisma.friend.findMany({
-      where: { userId: id },
-      include: { friend: true },
-      skip,
-      take: limit,
-    });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Token not found" });
+    }
 
-    // Meni qo‘shgan do‘stlar (friendId = men)
-    const addedMe = await prisma.friend.findMany({
-      where: { friendId: id },
-      include: { user: true },
-      skip,
-      take: limit,
-    });
+    //const token = authHeader.split(" ")[1];
+    const token = authHeader.replace("Bearer ", "");
+    const decoded = jwt.verify(token, SECRET_KEY);
 
-    // Umumiy sonlarni ham olish
-    const totalAddedByMe = await prisma.friend.count({
-      where: { userId: id },
-    });
+    const id = Number(decoded.id);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    const totalAddedMe = await prisma.friend.count({
-      where: { friendId: id },
-    });
+    try {
+      // Men qo‘shgan do‘stlar (userId = men)
+      const addedByMe = await prisma.friend.findMany({
+        where: { userId: id },
+        include: { friend: true },
+        skip,
+        take: limit,
+      });
 
-    res.json({
-      page,
-      limit,
-      addedByMe,
-      totalAddedByMe,
-      addedMe,
-      totalAddedMe,
-    });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ error: "Do‘stlar ro‘yxatini olishda xatolik yuz berdi." });
+      // Meni qo‘shgan do‘stlar (friendId = men)
+      const addedMe = await prisma.friend.findMany({
+        where: { friendId: id },
+        include: { user: true },
+        skip,
+        take: limit,
+      });
+
+      // Umumiy sonlarni ham olish
+      const totalAddedByMe = await prisma.friend.count({
+        where: { userId: id },
+      });
+
+      const totalAddedMe = await prisma.friend.count({
+        where: { friendId: id },
+      });
+
+      res.json({
+        page,
+        limit,
+        addedByMe,
+        totalAddedByMe,
+        addedMe,
+        totalAddedMe,
+      });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ error: "Do‘stlar ro‘yxatini olishda xatolik yuz berdi." });
+    }
   }
-}
-
-
- 
 
   async addNewFriend(req, res) {
-    const { userid, friendid } = req.params;
+     const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Token not found" });
+    }
+
+    //const token = authHeader.split(" ")[1];
+    const token = authHeader.replace("Bearer ", "");
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    const userid = Number(decoded.id);
+
+    const { friendid } = req.params;
     if (userid === friendid) {
-      return res
-        .status(400)
-        .json({ error: "Fatal error in id" });
+      return res.status(400).json({ error: "Fatal error in id" });
     }
 
     try {
@@ -114,11 +143,9 @@ class FriendController {
         },
       });
 
-    if (alreadyExists) {
-      return res
-        .status(400)
-        .json({ error: "This friend already exsist" });
-    }
+      if (alreadyExists) {
+        return res.status(400).json({ error: "This friend already exsist" });
+      }
 
       const friend = await prisma.friend.create({
         data: {
@@ -133,10 +160,18 @@ class FriendController {
     }
   }
 
- 
-
   async delete(req, res) {
-    const userId = Number(req.params.userid);
+     const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Token not found" });
+    }
+
+    //const token = authHeader.split(" ")[1];
+    const token = authHeader.replace("Bearer ", "");
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    const userId = Number(decoded.id);
     const friendId = Number(req.params.friendid);
 
     try {
@@ -151,13 +186,11 @@ class FriendController {
         return res.status(404).json({ message: "Friends not found" });
       }
 
-      res.json({ message: "Friends deleted"});
+      res.json({ message: "Friends deleted" });
       //res.json({ message: "Friends deleted", deleted });
     } catch (error) {
       console.error(error);
-      res
-        .status(500)
-        .json({ error: "Fatal error"});
+      res.status(500).json({ error: "Fatal error" });
     }
   }
 }
