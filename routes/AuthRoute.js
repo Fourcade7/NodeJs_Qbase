@@ -27,7 +27,7 @@ router.get("/decodetoken",authController.decodeToken);
 router.post("/refreshtoken",authController.refreshToken);
 router.get("/getalluserpag",authController.getAllUserPag);
 router.get("/getallusersearch",authController.getAllUserSearch);
-router.get("/getbyid",authController.getById);
+router.get("/getbyid/:id",authController.getById);
 router.put("/update",authController.update);
 router.delete("/delete",authController.delete);
 

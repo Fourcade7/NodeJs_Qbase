@@ -111,19 +111,11 @@ class AuthController{
 
 
     async getById(req,res){
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({ message: "Token not found" });
-        }
-
-        //const token = authHeader.split(" ")[1];
-        const token = authHeader.replace("Bearer ", "");
-        const decoded = jwt.verify(token, SECRET_KEY);
+        
+        const id=Number(req.params.id);
 
         try{
 
-            const id=Number(decoded.id);
             let user=await prisma.user.findUnique({
                 where:{id},
                 include:{
