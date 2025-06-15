@@ -5,8 +5,10 @@ import authRouter from './routes/AuthRoute.js';
 import partyRouter from './routes/PartyRoutes.js';
 import cardRouter from './routes/CardRoutes.js'; 
 import friendRouter from './routes/FriendRoutes.js'; 
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 app.use("/",authRouter);
