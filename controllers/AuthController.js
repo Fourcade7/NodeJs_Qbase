@@ -92,8 +92,12 @@ class AuthController{
             skip: skip,
             take: limit,
             include:{
-                    cardlist:true,
-                    partylist:true
+                cardlist: true,
+                    _count: {
+                        select: {
+                            partylist: true
+                        }
+                    }
                 }
 
         });
