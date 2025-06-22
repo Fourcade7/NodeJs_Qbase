@@ -91,6 +91,11 @@ class AuthController{
         let users = await prisma.user.findMany({
             skip: skip,
             take: limit,
+            include:{
+                    cardlist:true,
+                    partylist:true
+                }
+
         });
 
         // Jami foydalanuvchilar sonini olish
